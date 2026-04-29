@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fantasy Game Hub</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:sans-serif;background:#0d0d1a;color:#e0e0e0;min-height:100vh;display:flex}
+
+/* SIDEBAR */
+#sidebar{width:220px;min-height:100vh;background:#12122a;border-right:1px solid #2a2a5a;display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:10}
+#sidebar-header{padding:20px 16px 14px;border-bottom:1px solid #2a2a5a}
+#sidebar-header h1{font-size:16px;font-weight:500;color:#a78bfa}
+#sidebar-header p{font-size:11px;color:#666;margin-top:2px}
+#nav{flex:1;padding:10px 0}
+.nav-item{display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;border-left:3px solid transparent;transition:all 0.15s;font-size:13px;color:#aaa}
+.nav-item:hover{background:#1a1a3a;color:#e0e0e0}
+.nav-item.active{background:#1e1e42;border-left-color:#7F77DD;color:#c4b5fd}
+.nav-icon{font-size:18px;width:24px;text-align:center}
+.nav-label{flex:1}
+.nav-badge{font-size:10px;background:#2a2a5a;color:#888;padding:2px 6px;border-radius:10px}
+#sidebar-footer{padding:12px 16px;border-top:1px solid #2a2a5a;font-size:11px;color:#444;text-align:center}
+
+/* MAIN */
+#main{margin-left:220px;flex:1;min-height:100vh;display:flex;flex-direction:column}
+#topbar{background:#12122a;border-bottom:1px solid #2a2a5a;padding:12px 24px;display:flex;align-items:center;gap:12px}
+#topbar .game-title{font-size:16px;font-weight:500;color:#e0e0e0}
+#topbar .game-desc{font-size:12px;color:#666;margin-left:auto}
+#content{flex:1;padding:24px;max-width:760px;width:100%}
+
+/* HOME */
+.home-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px}
+.home-card{background:#16163a;border:1px solid #2a2a5a;border-radius:12px;padding:20px;cursor:pointer;transition:border-color 0.15s,background 0.15s}
+.home-card:hover{background:#1e1e42;border-color:#534AB7}
+.home-card-icon{font-size:32px;margin-bottom:10px}
+.home-card-title{font-size:15px;font-weight:500;color:#c4b5fd;margin-bottom:4px}
+.home-card-desc{font-size:12px;color:#888;line-height:1.5}
+.home-card-meta{margin-top:10px;font-size:11px;color:#555}
+
+/* SHARED GAME UI */
+.g-screen{text-align:center;padding:24px 16px}
+.g-screen h2{font-size:22px;font-weight:500;margin-bottom:8px;color:#e0e0e0}
+.g-screen p{font-size:14px;color:#aaa;margin-bottom:20px;line-height:1.6}
+input.g-input{background:#1a1a3a;border:1px solid #3a3a6a;border-radius:8px;padding:8px 12px;color:#e0e0e0;font-size:14px;width:140px;font-family:inherit}
+button.g-btn{background:#534AB7;color:#fff;border:none;border-radius:8px;padding:10px 24px;font-size:14px;cursor:pointer;font-family:inherit;transition:background 0.15s}
+button.g-btn:hover{background:#3C3489}
+button.g-btn.sec{background:#1e1e42;border:1px solid #3a3a6a;color:#aaa}
+button.g-btn.sec:hover{background:#2a2a5a;color:#e0e0e0}
+.g-badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:8px;margin-bottom:10px}
+.b-easy{background:#1a3a1a;color:#7dbb7d}
+.b-medium{background:#3a2a0a;color:#f0a030}
+.b-hard{background:#3a0a0a;color:#e07070}
+
+/* ── PUZZLE DUEL ── */
+.pd-arena{background:#16163a;border:1px solid #2a2a5a;border-radius:12px;padding:14px;margin-bottom:12px}
+.pd-players{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-bottom:12px}
+.pd-wiz{background:#0f0f2a;border:1px solid #3a3a6a;border-radius:10px;padding:10px;text-align:center}
+.pd-wiz.active{border:2px solid #7F77DD}
+.pd-wname{font-size:13px;font-weight:500;margin-bottom:5px}
+.hp-bg{background:#0a0a1a;border-radius:8px;height:10px;overflow:hidden;margin-bottom:3px}
+.hp-fill{height:100%;border-radius:8px;transition:width 0.4s}
+.hp-txt{font-size:12px;font-weight:500}
+.pd-log{background:#0f0f2a;border:1px solid #2a2a5a;border-radius:8px;padding:9px 12px;min-height:44px;font-size:12px;color:#aaa;text-align:center;font-style:italic;margin-bottom:0}
+.pd-puzzle{background:#16163a;border:1px solid #2a2a5a;border-radius:12px;padding:14px;margin-bottom:12px}
+.pd-trow{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.pd-tbg{flex:1;background:#0a0a1a;border-radius:6px;height:5px;overflow:hidden}
+.pd-tbar{height:100%;border-radius:6px;background:#7F77DD;transition:width 0.1s linear}
+.pd-tnum{font-size:12px;color:#888;min-width:28px;text-align:right}
+.pd-q{font-size:14px;font-weight:500;line-height:1.5;margin-bottom:12px;color:#e0e0e0}
+.pd-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pd-opt{background:#0f0f2a;border:1px solid #3a3a6a;border-radius:8px;padding:9px 11px;font-size:12px;cursor:pointer;text-align:left;color:#ddd;transition:background 0.12s;font-family:inherit}
+.pd-opt:hover:not(:disabled){background:#1e1e42;border-color:#7F77DD}
+.pd-opt.correct{background:#1a3a1a;border-color:#7dbb7d;color:#7dbb7d}
+.pd-opt.wrong{background:#3a0a0a;border-color:#e07070;color:#e07070}
+.pd-opt:disabled{cursor:default}
+
+/* ── MEMORY MATCH ── */
+.mm-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-size:13px;color:#aaa}
+.mm-stat{background:#16163a;border:1px solid #2a2a5a;border-radius:8px;padding:6px 12px;font-size:13px}
+.mm-grid{display:grid;gap:8px;margin-bottom:14px}
+.mm-card{aspect-ratio:1;background:#16163a;border:1px solid #2a2a5a;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;transition:transform 0.15s,background 0.15s;user-select:none}
+.mm-card:hover:not(.flipped):not(.matched){background:#1e1e42;transform:scale(1.04)}
+.mm-card.flipped,.mm-card.matched{background:#1e1e42;border-color:#534AB7}
+.mm-card.matched{border-color:#1D9E75;background:#0a2a1a}
+.mm-card.hidden{visibility:hidden}
+.mm-card .front{display:none}.mm-card .back{display:block}
+.mm-card.flipped .front,.mm-card.matched .front{display:block}
+.mm-card.flipped .back,.mm-card.matched .back{display:none}
+
+/* ── HANGMAN ── */
+.hm-word{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:20px}
+.hm-letter{width:32px;height:40px;border-bottom:2px solid #534AB7;display:flex;align-items:flex-end;justify-content:center;font-size:20px;font-weight:500;color:#c4b5fd;padding-bottom:2px}
+.hm-gallows{margin:0 auto 20px;text-align:center;font-family:monospace;font-size:13px;color:#555;line-height:1.3;white-space:pre}
+.hm-keys{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:16px}
+.hm-key{width:36px;height:36px;background:#16163a;border:1px solid #2a2a5a;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;font-weight:500;transition:background 0.12s;color:#ddd;font-family:inherit}
+.hm-key:hover:not(:disabled){background:#1e1e42;border-color:#7F77DD}
+.hm-key:disabled{opacity:0.3;cursor:default}
+.hm-key.hit{background:#1a3a1a;border-color:#7dbb7d;color:#7dbb7d}
+.hm-key.miss{background:#3a0a0a;border-color:#e07070;color:#e07070}
+.hm-hint{font-size:13px;color:#888;text-align:center;margin-bottom:12px;font-style:italic}
+.hm-lives{display:flex;gap:6px;justify-content:center;margin-bottom:16px}
+.hm-heart{font-size:18px}
+
+/* ── WORD SCRAMBLE ── */
+.ws-word{font-size:32px;font-weight:500;letter-spacing:8px;text-align:center;color:#a78bfa;margin-bottom:8px;font-family:monospace}
+.ws-hint{font-size:13px;color:#888;text-align:center;margin-bottom:20px;font-style:italic}
+.ws-input-row{display:flex;gap:8px;justify-content:center;margin-bottom:12px}
+.ws-input{background:#1a1a3a;border:1px solid #3a3a6a;border-radius:8px;padding:10px 14px;color:#e0e0e0;font-size:16px;width:220px;text-align:center;letter-spacing:3px;font-family:monospace}
+.ws-score{display:flex;justify-content:space-between;margin-bottom:16px;font-size:13px;color:#aaa}
+.ws-sval{color:#c4b5fd;font-weight:500}
+.ws-timer{text-align:center;font-size:13px;color:#aaa;margin-bottom:16px}
+.ws-tbar-bg{background:#1a1a3a;border-radius:6px;height:6px;overflow:hidden;margin-bottom:16px}
+.ws-tbar{height:100%;border-radius:6px;background:#7F77DD;transition:width 0.1s linear}
+.ws-result{font-size:14px;text-align:center;min-height:20px;margin-bottom:12px}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div id="sidebar-header">
+    <h1>⚔️ Fantasy Hub</h1>
+    <p>4 games inside</p>
+  </div>
+  <div id="nav">
+    <div class="nav-item active" onclick="loadGame('home')" id="nav-home">
+      <span class="nav-icon">🏰</span><span class="nav-label">Home</span>
+    </div>
+    <div class="nav-item" onclick="loadGame('duel')" id="nav-duel">
+      <span class="nav-icon">⚔️</span><span class="nav-label">Puzzle Duel</span><span class="nav-badge">2P</span>
+    </div>
+    <div class="nav-item" onclick="loadGame('memory')" id="nav-memory">
+      <span class="nav-icon">🃏</span><span class="nav-label">Memory Match</span><span class="nav-badge">Solo</span>
+    </div>
+    <div class="nav-item" onclick="loadGame('hangman')" id="nav-hangman">
+      <span class="nav-icon">🪄</span><span class="nav-label">Hangman</span><span class="nav-badge">Solo</span>
+    </div>
+    <div class="nav-item" onclick="loadGame('scramble')" id="nav-scramble">
+      <span class="nav-icon">🔤</span><span class="nav-label">Word Scramble</span><span class="nav-badge">Solo</span>
+    </div>
+  </div>
+  <div id="sidebar-footer">Fantasy Game Hub v2.0</div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <div id="topbar">
+    <span class="game-title" id="topbar-title">🏰 Fantasy Game Hub</span>
+    <span class="game-desc" id="topbar-desc">Choose a game to begin</span>
+  </div>
+  <div id="content"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// ROUTER
+// ═══════════════════════════════════════════
+const GAMES={
+  home:{title:"🏰 Fantasy Game Hub",desc:"Choose a game to begin"},
+  duel:{title:"⚔️ Puzzle Duel",desc:"2-player riddle battle"},
+  memory:{title:"🃏 Memory Card Match",desc:"Find all matching pairs"},
+  hangman:{title:"🪄 Hangman: Fantasy Edition",desc:"Guess the fantasy word"},
+  scramble:{title:"🔤 Fantasy Word Scramble",desc:"Unscramble before time runs out"},
+};
+let currentGame="home";
+
+function loadGame(id){
+  currentGame=id;
+  document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
+  document.getElementById("nav-"+id)?.classList.add("active");
+  document.getElementById("topbar-title").textContent=GAMES[id].title;
+  document.getElementById("topbar-desc").textContent=GAMES[id].desc;
+  clearAllIntervals();
+  const c=document.getElementById("content");
+  c.innerHTML="";
+  if(id==="home") renderHome();
+  else if(id==="duel") initDuel();
+  else if(id==="memory") initMemory();
+  else if(id==="hangman") initHangman();
+  else if(id==="scramble") initScramble();
+}
+
+const allIntervals=[];
+function regInterval(id){allIntervals.push(id)}
+function clearAllIntervals(){allIntervals.forEach(clearInterval);allIntervals.length=0}
+
+// ═══════════════════════════════════════════
+// HOME
+// ═══════════════════════════════════════════
+function renderHome(){
+  document.getElementById("content").innerHTML=`
+  <h2 style="font-size:20px;font-weight:500;margin-bottom:6px;color:#c4b5fd">Welcome, adventurer!</h2>
+  <p style="font-size:13px;color:#666;margin-bottom:20px">Pick a game from the menu or the cards below.</p>
+  <div class="home-grid">
+    <div class="home-card" onclick="loadGame('duel')">
+      <div class="home-card-icon">⚔️</div>
+      <div class="home-card-title">Puzzle Duel</div>
+      <div class="home-card-desc">Two wizards battle by answering riddles. Wrong answers backfire!</div>
+      <div class="home-card-meta">👥 2 Players · Riddles · 15s timer</div>
+    </div>
+    <div class="home-card" onclick="loadGame('memory')">
+      <div class="home-card-icon">🃏</div>
+      <div class="home-card-title">Memory Card Match</div>
+      <div class="home-card-desc">Flip cards to find matching fantasy pairs. Beat your best moves!</div>
+      <div class="home-card-meta">🧠 Solo · 16 cards · Memory</div>
+    </div>
+    <div class="home-card" onclick="loadGame('hangman')">
+      <div class="home-card-icon">🪄</div>
+      <div class="home-card-title">Hangman: Fantasy</div>
+      <div class="home-card-desc">Guess spells, creatures, and artifacts letter by letter. 6 lives!</div>
+      <div class="home-card-meta">🧙 Solo · Fantasy words · Classic</div>
+    </div>
+    <div class="home-card" onclick="loadGame('scramble')">
+      <div class="home-card-icon">🔤</div>
+      <div class="home-card-title">Word Scramble</div>
+      <div class="home-card-desc">Unscramble jumbled fantasy words before the countdown ends!</div>
+      <div class="home-card-meta">⏱️ Solo · 30s per word · Points</div>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════
+// PUZZLE DUEL
+// ═══════════════════════════════════════════
+const PD_PUZZLES=[
+  {q:"I have cities, but no houses. Mountains, but no trees. Water, but no fish. What am I?",opts:["A dream","A map","A painting","A mirror"],ans:1,diff:"easy",spell:"Arcane Bolt"},
+  {q:"What can you catch but never throw?",opts:["A shadow","A ball","A cold","A wave"],ans:2,diff:"easy",spell:"Mind Shatter"},
+  {q:"I speak without a mouth, hear without ears. I come alive with wind. What am I?",opts:["An echo","A ghost","A whistle","A kite"],ans:0,diff:"easy",spell:"Riddle Curse"},
+  {q:"What comes once in a minute, twice in a moment, never in a thousand years?",opts:["Silence","Luck","The letter M","A second"],ans:2,diff:"easy",spell:"Arcane Bolt"},
+  {q:"The more you take, the more you leave behind. What am I?",opts:["Memories","Footsteps","Time","Breath"],ans:1,diff:"easy",spell:"Shadow Step"},
+  {q:"Next number: 2, 6, 12, 20, 30, ?",opts:["40","42","44","48"],ans:1,diff:"medium",spell:"Chaos Storm"},
+  {q:"A farmer has 17 sheep. All but 9 die. How many are left?",opts:["8","9","17","0"],ans:1,diff:"medium",spell:"Soul Drain"},
+  {q:"I am not alive, but I grow. No lungs, but I need air. What am I?",opts:["A cloud","Fire","A plant","A storm"],ans:1,diff:"medium",spell:"Inferno Hex"},
+  {q:"What has hands but cannot clap?",opts:["A statue","A clock","A glove","A scarecrow"],ans:1,diff:"easy",spell:"Time Freeze"},
+  {q:"Next number: 3, 9, 27, 81, ?",opts:["162","243","324","189"],ans:1,diff:"medium",spell:"Dragon Breath"},
+  {q:"In a room of 23 people, approximate probability two share a birthday?",opts:["~10%","~25%","~50%","~75%"],ans:2,diff:"hard",spell:"Time Unravel"},
+  {q:"Snail climbs 10m wall. Climbs 3m/day, slides 2m/night. Which day does it reach top?",opts:["Day 7","Day 8","Day 9","Day 10"],ans:1,diff:"hard",spell:"Ancient Riddle"},
+  {q:"Missing number: 1, 1, 2, 3, 5, 8, 13, ?",opts:["18","19","20","21"],ans:3,diff:"hard",spell:"Eternal Frost"},
+  {q:"What 3-digit number: digits sum=10, reversed is 99 more, hundreds=2×units?",opts:["253","341","142","451"],ans:2,diff:"hard",spell:"Oblivion Curse"},
+];
+let pd={};
+function initDuel(){
+  pd={screen:"start",p:[{name:"Wizard 1",hp:100},{name:"Wizard 2",hp:100}],turn:0,round:0,
+    pool:[...PD_PUZZLES].sort(()=>Math.random()-0.5),qi:0,
+    log:"The duel begins!",timer:15,answered:false,winner:null};
+  renderDuel();
+}
+function pdPuzzle(){return pd.pool[pd.qi%pd.pool.length]}
+function pdStartTimer(){
+  clearAllIntervals();
+  pd.timer=15;
+  const iv=setInterval(()=>{
+    pd.timer--;
+    if(pd.timer<=0){clearInterval(iv);if(!pd.answered)pdTimeout();}
+    const b=document.getElementById("pdtbar"),n=document.getElementById("pdtnum");
+    if(b){b.style.width=(pd.timer/15*100)+"%";b.style.background=pd.timer>6?"#7F77DD":pd.timer>3?"#BA7517":"#E24B4A";}
+    if(n)n.textContent=pd.timer+"s";
+  },1000);
+  regInterval(iv);
+}
+function pdTimeout(){
+  pd.answered=true;
+  const cur=pd.turn,dmg=10+Math.floor(Math.random()*6);
+  pd.p[cur].hp=Math.max(0,pd.p[cur].hp-dmg);
+  pd.log=`${pd.p[cur].name} ran out of time! Backfire: ${dmg} dmg!`;
+  pdMarkOpts(-1);pdCheckWin();
+}
+function pdAnswer(idx){
+  if(pd.answered)return;
+  pd.answered=true;clearAllIntervals();
+  const puz=pdPuzzle(),cur=pd.turn,opp=1-cur;
+  if(idx===puz.ans){
+    const dmg=20+Math.floor(Math.random()*16);
+    pd.p[opp].hp=Math.max(0,pd.p[opp].hp-dmg);
+    pd.log=`${pd.p[cur].name} casts ${puz.spell}! ${dmg} damage!`;
+  } else {
+    const dmg=10+Math.floor(Math.random()*6);
+    pd.p[cur].hp=Math.max(0,pd.p[cur].hp-dmg);
+    pd.log=`${pd.p[cur].name} answered wrong! Backfire: ${dmg} dmg!`;
+  }
+  pdMarkOpts(idx);pdCheckWin();
+}
+function pdMarkOpts(chosen){
+  const puz=pdPuzzle();
+  document.querySelectorAll(".pd-opt").forEach((b,i)=>{
+    b.disabled=true;
+    if(i===puz.ans)b.classList.add("correct");
+    else if(i===chosen&&chosen!==puz.ans)b.classList.add("wrong");
+  });
+  pdUpdateHP();
+  if(!pd.winner)setTimeout(pdNext,1800);
+}
+function pdCheckWin(){
+  if(pd.p[0].hp<=0||pd.p[1].hp<=0){pd.winner=pd.p[0].hp<=0?1:0;pd.screen="end";setTimeout(renderDuel,1900);}
+}
+function pdNext(){
+  pd.turn=1-pd.turn;pd.qi++;pd.round=Math.floor(pd.qi/2);pd.answered=false;
+  pd.log=`${pd.p[pd.turn].name}'s turn!`;
+  renderDuel();pdStartTimer();
+}
+function pdUpdateHP(){
+  pd.p.forEach((p,i)=>{
+    const b=document.getElementById("pdhp"+i),n=document.getElementById("pdhpn"+i);
+    if(b)b.style.width=p.hp+"%";if(n)n.textContent=p.hp+" HP";
+  });
+}
+function hpCol(hp){return hp>50?"#1D9E75":hp>25?"#f0a030":"#e07070"}
+function renderDuel(){
+  const c=document.getElementById("content");
+  if(pd.screen==="start"){
+    c.innerHTML=`<div class="g-screen">
+      <div style="font-size:40px;margin-bottom:8px">🧙‍♂️⚔️🧙‍♀️</div>
+      <h2>Puzzle Duel</h2>
+      <p>Answer riddles to cast spells. Wrong answers backfire!<br>First wizard to 0 HP loses.</p>
+      <div style="margin-bottom:16px">
+        <div style="font-size:13px;color:#aaa;margin-bottom:10px">Enter wizard names:</div>
+        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+          <input class="g-input" id="pdn1" value="Wizard 1">
+          <input class="g-input" id="pdn2" value="Wizard 2">
+        </div>
+      </div>
+      <button class="g-btn" onclick="pdStart()">Begin the Duel ⚔️</button>
+    </div>`;return;
+  }
+  if(pd.screen==="end"){
+    const w=pd.p[pd.winner],l=pd.p[1-pd.winner];
+    c.innerHTML=`<div class="g-screen">
+      <div style="font-size:40px;margin-bottom:8px">🏆</div>
+      <h2>${w.name} wins!</h2>
+      <p>${l.name} has been defeated.</p>
+      <div style="background:#16163a;border:1px solid #2a2a5a;border-radius:10px;padding:14px;margin-bottom:20px;display:inline-block;min-width:200px">
+        <div style="font-size:13px;margin-bottom:4px;color:#aaa">Rounds: ${pd.round+1}</div>
+        <div style="font-size:13px;color:#7dbb7d;font-weight:500">${w.name}: ${w.hp} HP</div>
+        <div style="font-size:13px;color:#e07070">${l.name}: 0 HP</div>
+      </div><br>
+      <button class="g-btn" onclick="initDuel()">Play Again</button>
+      <button class="g-btn sec" style="margin-left:8px" onclick="loadGame('home')">Hub</button>
+    </div>`;return;
+  }
+  const puz=pdPuzzle(),cur=pd.turn;
+  c.innerHTML=`
+  <div class="pd-arena">
+    <div class="pd-players">
+      <div class="pd-wiz${cur===0?" active":""}">
+        <div class="pd-wname">${pd.p[0].name}${cur===0?" ✦":""}</div>
+        <div class="hp-bg"><div id="pdhp0" class="hp-fill" style="width:${pd.p[0].hp}%;background:${hpCol(pd.p[0].hp)}"></div></div>
+        <div id="pdhpn0" class="hp-txt" style="color:${hpCol(pd.p[0].hp)}">${pd.p[0].hp} HP</div>
+      </div>
+      <div style="font-size:18px;color:#555">VS</div>
+      <div class="pd-wiz${cur===1?" active":""}">
+        <div class="pd-wname">${cur===1?"✦ ":""}${pd.p[1].name}</div>
+        <div class="hp-bg"><div id="pdhp1" class="hp-fill" style="width:${pd.p[1].hp}%;background:${hpCol(pd.p[1].hp)}"></div></div>
+        <div id="pdhpn1" class="hp-txt" style="color:${hpCol(pd.p[1].hp)}">${pd.p[1].hp} HP</div>
+      </div>
+    </div>
+    <div class="pd-log">${pd.log}</div>
+  </div>
+  <div class="pd-puzzle">
+    <div style="font-size:11px;color:#666;margin-bottom:6px">${pd.p[cur].name}'s turn — round ${pd.round+1}</div>
+    <div class="pd-trow"><div class="pd-tbg"><div id="pdtbar" class="pd-tbar"></div></div><div id="pdtnum" class="pd-tnum">15s</div></div>
+    <span class="g-badge b-${puz.diff}">${puz.diff}</span>
+    <div class="pd-q">${puz.q}</div>
+    <div class="pd-opts">${puz.opts.map((o,i)=>`<button class="pd-opt" onclick="pdAnswer(${i})">${o}</button>`).join("")}</div>
+  </div>`;
+  pdStartTimer();
+}
+function pdStart(){
+  pd.p[0].name=document.getElementById("pdn1").value.trim()||"Wizard 1";
+  pd.p[1].name=document.getElementById("pdn2").value.trim()||"Wizard 2";
+  pd.screen="game";pd.log=`The duel begins! ${pd.p[0].name} goes first.`;
+  renderDuel();pdStartTimer();
+}
+
+// ═══════════════════════════════════════════
+// MEMORY MATCH
+// ═══════════════════════════════════════════
+const MM_EMOJIS=["🐉","🧙","⚔️","🏰","🧝","🔮","🗡️","🦄","🧪","🛡️","🪄","💎","🌙","🔥","❄️","🌿"];
+let mm={};
+function initMemory(){
+  const icons=MM_EMOJIS.slice(0,8);
+  const cards=[...icons,...icons].sort(()=>Math.random()-0.5).map((ic,i)=>({id:i,icon:ic,flipped:false,matched:false}));
+  mm={cards,flipped:[],matched:0,moves:0,locked:false,started:false,time:0,timerIv:null,best:mm.best||null};
+  renderMemory();
+}
+function mmFlip(i){
+  if(mm.locked||mm.cards[i].flipped||mm.cards[i].matched)return;
+  if(!mm.started){mm.started=true;mmStartTimer();}
+  mm.cards[i].flipped=true;mm.flipped.push(i);
+  renderMemory();
+  if(mm.flipped.length===2){
+    mm.moves++;mm.locked=true;
+    const [a,b]=mm.flipped;
+    if(mm.cards[a].icon===mm.cards[b].icon){
+      mm.cards[a].matched=mm.cards[b].matched=true;
+      mm.matched+=2;mm.flipped=[];mm.locked=false;
+      if(mm.matched===mm.cards.length){
+        clearInterval(mm.timerIv);
+        if(!mm.best||mm.moves<mm.best)mm.best=mm.moves;
+        setTimeout(()=>{renderMemory(true);},400);
+      } else renderMemory();
+    } else {
+      setTimeout(()=>{mm.cards[a].flipped=mm.cards[b].flipped=false;mm.flipped=[];mm.locked=false;renderMemory();},900);
+    }
+  }
+}
+function mmStartTimer(){
+  mm.timerIv=setInterval(()=>{mm.time++;document.getElementById("mmtime")&&(document.getElementById("mmtime").textContent=mmFmtTime(mm.time));},1000);
+  regInterval(mm.timerIv);
+}
+function mmFmtTime(s){return`${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`}
+function renderMemory(won=false){
+  const c=document.getElementById("content");
+  const cols=4,size=Math.min(80,Math.floor((Math.min(window.innerWidth-260,680)-cols*8)/cols));
+  if(won){
+    c.innerHTML=`<div class="g-screen">
+      <div style="font-size:40px;margin-bottom:8px">🎉</div>
+      <h2>You matched them all!</h2>
+      <p>Completed in <strong>${mm.moves} moves</strong> and <strong>${mmFmtTime(mm.time)}</strong>.<br>${mm.best?`Best: ${mm.best} moves`:""}</p>
+      <button class="g-btn" onclick="initMemory()">Play Again</button>
+      <button class="g-btn sec" style="margin-left:8px" onclick="loadGame('home')">Hub</button>
+    </div>`;return;
+  }
+  c.innerHTML=`
+  <div class="mm-info">
+    <div class="mm-stat">Moves: <strong style="color:#c4b5fd">${mm.moves}</strong></div>
+    <div class="mm-stat">Pairs: <strong style="color:#7dbb7d">${mm.matched/2}/8</strong></div>
+    <div class="mm-stat">Time: <span id="mmtime">${mmFmtTime(mm.time)}</span></div>
+    ${mm.best?`<div class="mm-stat">Best: <strong style="color:#f0a030">${mm.best} moves</strong></div>`:""}
+  </div>
+  <div class="mm-grid" style="grid-template-columns:repeat(4,${size}px);justify-content:start">
+    ${mm.cards.map((card,i)=>`
+    <div class="mm-card${card.flipped?" flipped":""}${card.matched?" matched":""}" onclick="mmFlip(${i})" style="width:${size}px;height:${size}px;font-size:${size*0.4}px">
+      <span class="front">${card.icon}</span>
+      <span class="back" style="font-size:${size*0.3}px;color:#3a3a6a">?</span>
+    </div>`).join("")}
+  </div>
+  <button class="g-btn sec" onclick="initMemory()" style="margin-right:8px">Restart</button>
+  <button class="g-btn sec" onclick="loadGame('home')">Hub</button>`;
+}
+
+// ═══════════════════════════════════════════
+// HANGMAN
+// ═══════════════════════════════════════════
+const HM_WORDS=[
+  {word:"DRAGON",hint:"A fire-breathing mythical creature"},
+  {word:"SORCERER",hint:"A master of arcane magic"},
+  {word:"DUNGEON",hint:"Underground labyrinth of dangers"},
+  {word:"ENCHANTED",hint:"Under a magical spell"},
+  {word:"GRIFFIN",hint:"Half eagle, half lion"},
+  {word:"BASILISK",hint:"Its gaze turns you to stone"},
+  {word:"CAULDRON",hint:"A witch's bubbling pot"},
+  {word:"PHANTOM",hint:"A ghostly apparition"},
+  {word:"LABYRINTH",hint:"A maze with no easy exit"},
+  {word:"WARLOCK",hint:"A male practitioner of dark magic"},
+  {word:"PHOENIX",hint:"A bird reborn from ashes"},
+  {word:"ALCHEMY",hint:"Turning metal into gold"},
+  {word:"GOBLIN",hint:"A mischievous small creature"},
+  {word:"UNICORN",hint:"A magical horned horse"},
+  {word:"NECROMANCER",hint:"One who raises the dead"},
+  {word:"ORACLE",hint:"A prophet who sees the future"},
+];
+const HM_STAGES=[
+`
+  -----
+  |   |
+      |
+      |
+      |
+      |
+=========`,`
+  -----
+  |   |
+  O   |
+      |
+      |
+      |
+=========`,`
+  -----
+  |   |
+  O   |
+  |   |
+      |
+      |
+=========`,`
+  -----
+  |   |
+  O   |
+ /|   |
+      |
+      |
+=========`,`
+  -----
+  |   |
+  O   |
+ /|\\  |
+      |
+      |
+=========`,`
+  -----
+  |   |
+  O   |
+ /|\\  |
+ /    |
+      |
+=========`,`
+  -----
+  |   |
+  O   |
+ /|\\  |
+ / \\  |
+      |
+=========`];
+let hm={};
+function initHangman(){
+  const entry=HM_WORDS[Math.floor(Math.random()*HM_WORDS.length)];
+  hm={word:entry.word,hint:entry.hint,guessed:new Set(),lives:6,won:false,lost:false};
+  renderHangman();
+}
+function hmGuess(l){
+  if(hm.won||hm.lost||hm.guessed.has(l))return;
+  hm.guessed.add(l);
+  if(!hm.word.includes(l))hm.lives--;
+  const revealed=hm.word.split("").every(c=>hm.guessed.has(c));
+  if(revealed)hm.won=true;
+  if(hm.lives===0)hm.lost=true;
+  renderHangman();
+}
+function renderHangman(){
+  const c=document.getElementById("content");
+  if(hm.won||hm.lost){
+    c.innerHTML=`<div class="g-screen">
+      <div style="font-size:40px;margin-bottom:8px">${hm.won?"🎉":"💀"}</div>
+      <h2>${hm.won?"Spell broken!":"You perished!"}</h2>
+      <p>${hm.won?`You guessed <strong style="color:#c4b5fd">${hm.word}</strong> correctly!`:`The word was <strong style="color:#e07070">${hm.word}</strong>.`}</p>
+      <button class="g-btn" onclick="initHangman()">Next Word</button>
+      <button class="g-btn sec" style="margin-left:8px" onclick="loadGame('home')">Hub</button>
+    </div>`;return;
+  }
+  const letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+  c.innerHTML=`
+  <div class="hm-gallows">${HM_STAGES[6-hm.lives]}</div>
+  <div class="hm-lives">${Array(hm.lives).fill("❤️").concat(Array(6-hm.lives).fill("🖤")).join("")}</div>
+  <div class="hm-word">${hm.word.split("").map(l=>`<div class="hm-letter">${hm.guessed.has(l)?l:""}</div>`).join("")}</div>
+  <div class="hm-hint">Hint: ${hm.hint}</div>
+  <div class="hm-keys">${letters.map(l=>{
+    const guessed=hm.guessed.has(l);
+    const hit=guessed&&hm.word.includes(l);
+    const miss=guessed&&!hm.word.includes(l);
+    return`<button class="hm-key${hit?" hit":""}${miss?" miss":""}" onclick="hmGuess('${l}')" ${guessed?"disabled":""}>${l}</button>`;
+  }).join("")}</div>
+  <button class="g-btn sec" onclick="initHangman()" style="margin-right:8px">New Word</button>
+  <button class="g-btn sec" onclick="loadGame('home')">Hub</button>`;
+}
+
+// ═══════════════════════════════════════════
+// WORD SCRAMBLE
+// ═══════════════════════════════════════════
+const WS_WORDS=[
+  {word:"DRAGON",hint:"Fire-breathing beast"},
+  {word:"WIZARD",hint:"Master of spells"},
+  {word:"CASTLE",hint:"A fortified stronghold"},
+  {word:"GOBLIN",hint:"Mischievous small creature"},
+  {word:"POTION",hint:"A magical brew"},
+  {word:"SHIELD",hint:"Protects in battle"},
+  {word:"RUNE",hint:"A magical symbol"},
+  {word:"AMULET",hint:"A protective charm"},
+  {word:"VORTEX",hint:"A swirling magical portal"},
+  {word:"SPHINX",hint:"Riddle-posing mythical beast"},
+  {word:"TROLL",hint:"Lives under bridges"},
+  {word:"ELIXIR",hint:"A powerful healing liquid"},
+  {word:"MINOTAUR",hint:"Half man, half bull"},
+  {word:"ENCHANT",hint:"To cast a spell on something"},
+  {word:"BASILISK",hint:"Its gaze is lethal"},
+  {word:"PEGASUS",hint:"A winged horse"},
+  {word:"GRIMOIRE",hint:"A book of spells"},
+  {word:"CYCLOPS",hint:"One-eyed giant"},
+];
+let ws={};
+function shuffle(w){return w.split("").sort(()=>Math.random()-0.5).join("")}
+function initScramble(){
+  ws={pool:[...WS_WORDS].sort(()=>Math.random()-0.5),qi:0,score:0,streak:0,timer:30,iv:null,input:"",result:"",answered:false};
+  wsLoad();
+}
+function wsLoad(){
+  clearAllIntervals();
+  const entry=ws.pool[ws.qi%ws.pool.length];
+  let scrambled=shuffle(entry.word);
+  while(scrambled===entry.word)scrambled=shuffle(entry.word);
+  ws.current={...entry,scrambled};
+  ws.timer=30;ws.answered=false;ws.input="";ws.result="";
+  renderScramble();
+  const iv=setInterval(()=>{
+    ws.timer--;
+    const b=document.getElementById("wstbar"),n=document.getElementById("wstime");
+    if(b)b.style.width=(ws.timer/30*100)+"%";
+    if(n)n.textContent=ws.timer+"s";
+    if(ws.timer<=0){clearInterval(iv);if(!ws.answered)wsTimeout();}
+  },1000);
+  regInterval(iv);
+}
+function wsTimeout(){
+  ws.answered=true;ws.streak=0;
+  ws.result=`<span style="color:#e07070">Time's up! The word was <strong>${ws.current.word}</strong>.</span>`;
+  renderScramble();setTimeout(wsNext,2000);
+}
+function wsCheck(){
+  if(ws.answered)return;
+  const val=(document.getElementById("wsinput")?.value||"").toUpperCase().trim();
+  if(!val)return;
+  if(val===ws.current.word){
+    ws.answered=true;
+    const pts=10+Math.floor(ws.timer/3)+ws.streak*5;
+    ws.score+=pts;ws.streak++;
+    ws.result=`<span style="color:#7dbb7d">Correct! +${pts} points (streak: ${ws.streak})</span>`;
+    renderScramble();setTimeout(wsNext,1500);
+  } else {
+    ws.result=`<span style="color:#e07070">Not quite... try again!</span>`;
+    const inp=document.getElementById("wsinput");
+    if(inp){inp.value="";inp.focus();}
+    document.getElementById("wsresult").innerHTML=ws.result;
+  }
+}
+function wsNext(){ws.qi++;wsLoad();}
+function wsSkip(){ws.answered=true;ws.streak=0;ws.result=`<span style="color:#aaa">Skipped. The word was <strong>${ws.current.word}</strong>.</span>`;renderScramble();setTimeout(wsNext,1500);}
+function renderScramble(){
+  const c=document.getElementById("content");
+  c.innerHTML=`
+  <div class="ws-score">
+    <div>Score: <span class="ws-sval">${ws.score}</span></div>
+    <div>Streak: <span class="ws-sval">${ws.streak} 🔥</span></div>
+    <div>Word: <span class="ws-sval">${ws.qi+1}</span></div>
+  </div>
+  <div class="ws-tbar-bg"><div id="wstbar" class="ws-tbar" style="width:${ws.timer/30*100}%"></div></div>
+  <div class="ws-timer">Time left: <span id="wstime">${ws.timer}s</span></div>
+  <div class="ws-word">${ws.current.scrambled}</div>
+  <div class="ws-hint">${ws.current.hint}</div>
+  <div class="ws-input-row">
+    <input id="wsinput" class="ws-input" placeholder="Your answer" value="${ws.input}" oninput="ws.input=this.value" onkeydown="if(event.key==='Enter')wsCheck()" ${ws.answered?"disabled":""} autocomplete="off" autocorrect="off" spellcheck="false">
+  </div>
+  <div id="wsresult" class="ws-result">${ws.result}</div>
+  <div style="display:flex;gap:8px;justify-content:center">
+    <button class="g-btn" onclick="wsCheck()" ${ws.answered?"disabled":""}>Submit</button>
+    <button class="g-btn sec" onclick="wsSkip()" ${ws.answered?"disabled":""}>Skip</button>
+    <button class="g-btn sec" onclick="initScramble()">Restart</button>
+  </div>`;
+  if(!ws.answered)document.getElementById("wsinput")?.focus();
+}
+
+// INIT
+loadGame("home");
+</script>
+</body>
+</html>
