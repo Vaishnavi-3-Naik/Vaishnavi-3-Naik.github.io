@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fantasy Puzzle Duel</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-dark">
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div id="sidebar-header">
+    <h1>⚔️ Fantasy Hub</h1>
+    <p>5 games · achievements</p>
+  </div>
+  <div id="nav">
+    <div class="nav-item active" onclick="loadGame('home')" id="nav-home">
+      <span class="nav-icon">🏰</span><span class="nav-label">Home</span>
+    </div>
+    <div class="nav-item" onclick="loadGame('duel')" id="nav-duel">
+      <span class="nav-icon">⚔️</span><span class="nav-label">Puzzle Duel</span><span class="nav-badge">2P</span>
+    </div>
+    <div class="nav-item" onclick="loadGame('memory')" id="nav-memory">
+      <span class="nav-icon">🃏</span><span class="nav-label">Memory Match</span><span class="nav-badge">Solo</span>
+    </div>
+    <div class="nav-item" onclick="loadGame('hangman')" id="nav-hangman">
+      <span class="nav-icon">🪄</span><span class="nav-label">Hangman</span><span class="nav-badge">Solo</span>
+    </div>
+    <div class="nav-item" onclick="loadGame('scramble')" id="nav-scramble">
+      <span class="nav-icon">🔤</span><span class="nav-label">Word Scramble</span><span class="nav-badge">Solo</span>
+    </div>
+    <div class="nav-item" onclick="loadGame('trivia')" id="nav-trivia">
+      <span class="nav-icon">🧩</span><span class="nav-label">Trivia Quest</span><span class="nav-badge new-badge">NEW</span>
+    </div>
+  </div>
+  <div id="sidebar-bottom">
+    <div class="nav-item" onclick="loadGame('achievements')" id="nav-achievements">
+      <span class="nav-icon">🏅</span><span class="nav-label">Achievements</span><span id="ach-count" class="nav-badge"></span>
+    </div>
+    <div class="nav-item" onclick="loadGame('stats')" id="nav-stats">
+      <span class="nav-icon">📊</span><span class="nav-label">Stats</span>
+    </div>
+  </div>
+  <div id="sidebar-footer">Fantasy Puzzle Duel v3.0</div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <div id="topbar">
+    <span class="game-title" id="topbar-title">🏰 Fantasy Game Hub</span>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
+      <span class="game-desc" id="topbar-desc">Choose a game to begin</span>
+      <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">☀️</button>
+    </div>
+  </div>
+  <div id="content"></div>
+</div>
+
+<!-- Achievement toast notification -->
+<div id="ach-toast" class="ach-toast hidden"></div>
+
+<!-- Scripts loaded in dependency order -->
+<script src="js/storage.js"></script>
+<script src="js/data.js"></script>
+<script src="js/achievements.js"></script>
+<script src="js/duel.js"></script>
+<script src="js/memory.js"></script>
+<script src="js/hangman.js"></script>
+<script src="js/scramble.js"></script>
+<script src="js/trivia.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
